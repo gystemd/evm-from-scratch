@@ -17,6 +17,8 @@ import (
 const STOP = 0
 const ADD = 1
 const MUL = 2
+const SUB = 3
+const DIV = 4
 const POP = 80
 const PUSH0 = 95
 
@@ -37,6 +39,11 @@ func Evm(code []byte) ([]*big.Int, bool) {
 			sum := new(big.Int).Add(stack[0], stack[1])
 			sum.And(sum, mask)
 			stack = append([]*big.Int{sum}, stack[2:]...)
+		case op == MUL:
+			mask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
+			product := new(big.Int).Mul(stack[0], stack[1])
+			product.And(product, mask)
+			stack = append([]*big.Int{product}, stack[2:]...)
 		case op == PUSH0:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
 		case op > PUSH0 && op < 128:
