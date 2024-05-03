@@ -22,6 +22,8 @@ const DIV = 4
 const POP = 80
 const PUSH0 = 95
 
+var bitMask256 = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
+
 // Run runs the EVM code and returns the stack and a success indicator.
 func Evm(code []byte) ([]*big.Int, bool) {
 	var stack []*big.Int
@@ -35,15 +37,17 @@ func Evm(code []byte) ([]*big.Int, bool) {
 		case op == STOP:
 			pc = len(code)
 		case op == ADD:
-			mask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
 			sum := new(big.Int).Add(stack[0], stack[1])
-			sum.And(sum, mask)
+			sum.And(sum, bitMask256)
 			stack = append([]*big.Int{sum}, stack[2:]...)
 		case op == MUL:
-			mask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
 			product := new(big.Int).Mul(stack[0], stack[1])
-			product.And(product, mask)
+			product.And(product, bitMask256)
 			stack = append([]*big.Int{product}, stack[2:]...)
+		case op == SUB:
+			diff := new(big.Int).Sub(stack[0], stack[1])
+			diff.And(diff, bitMask256)
+			stack = append([]*big.Int{diff}, stack[2:]...)
 		case op == PUSH0:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
 		case op > PUSH0 && op < 128:
