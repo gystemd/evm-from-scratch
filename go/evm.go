@@ -48,6 +48,15 @@ func Evm(code []byte) ([]*big.Int, bool) {
 			diff := new(big.Int).Sub(stack[0], stack[1])
 			diff.And(diff, bitMask256)
 			stack = append([]*big.Int{diff}, stack[2:]...)
+		case op == DIV:
+			var quotient *big.Int
+			if stack[1].Cmp(big.NewInt(0)) != 0 {
+				quotient = new(big.Int).Div(stack[0], stack[1])
+			} else {
+				quotient = big.NewInt(0)
+			}
+			quotient.And(quotient, bitMask256)
+			stack = append([]*big.Int{quotient}, stack[2:]...)
 		case op == PUSH0:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
 		case op > PUSH0 && op < 128:
