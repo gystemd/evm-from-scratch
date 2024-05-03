@@ -25,8 +25,11 @@ func Evm(code []byte) ([]*big.Int, bool) {
 
 		switch {
 		case op == 0x00:
+			pc = len(code)
 		case op == 0x5f:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
+		case op == 80:
+			stack = stack[1:]
 		case op > 95 && op < 128:
 			size := int(op) - 95
 			operand := big.NewInt(0)
