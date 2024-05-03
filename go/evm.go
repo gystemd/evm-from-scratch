@@ -26,6 +26,11 @@ func Evm(code []byte) ([]*big.Int, bool) {
 		switch {
 		case op == 0x00:
 			pc = len(code)
+		case op == 1:
+			mask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
+			sum := new(big.Int).Add(stack[0], stack[1])
+			sum.And(sum, mask)
+			stack = append([]*big.Int{sum}, stack[2:]...)
 		case op == 0x5f:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
 		case op == 80:
