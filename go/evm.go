@@ -14,6 +14,12 @@ import (
 	"math/big"
 )
 
+const STOP = 0
+const ADD = 1
+const MUL = 2
+const POP = 80
+const PUSH0 = 95
+
 // Run runs the EVM code and returns the stack and a success indicator.
 func Evm(code []byte) ([]*big.Int, bool) {
 	var stack []*big.Int
@@ -24,18 +30,16 @@ func Evm(code []byte) ([]*big.Int, bool) {
 		pc++
 
 		switch {
-		case op == 0x00:
+		case op == STOP:
 			pc = len(code)
-		case op == 1:
+		case op == ADD:
 			mask := new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
 			sum := new(big.Int).Add(stack[0], stack[1])
 			sum.And(sum, mask)
 			stack = append([]*big.Int{sum}, stack[2:]...)
-		case op == 0x5f:
+		case op == PUSH0:
 			stack = append([]*big.Int{big.NewInt(0x00)}, stack...)
-		case op == 80:
-			stack = stack[1:]
-		case op > 95 && op < 128:
+		case op > PUSH0 && op < 128:
 			size := int(op) - 95
 			operand := big.NewInt(0)
 			for i := 0; i < size; i++ {
@@ -45,6 +49,8 @@ func Evm(code []byte) ([]*big.Int, bool) {
 				pc++
 			}
 			stack = append([]*big.Int{operand}, stack...)
+		case op == POP:
+			stack = stack[1:]
 		default:
 		}
 	}
